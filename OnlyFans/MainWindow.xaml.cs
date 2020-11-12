@@ -167,7 +167,7 @@ namespace OnlyFans
             clearCartButton.Click += ClearCartOnClick;
             cartWrapPanel.Children.Add(clearCartButton);
 
-            // Button for saving items in cart
+            // Button for checkout items in cart
             var checkoutCartButton = new Button
             {
                 Content = "Checkout",
@@ -206,9 +206,57 @@ namespace OnlyFans
         {
             itemsInCart.Clear();
         }
+        //Check if the coupon code is valid and if so run the the Receipt method
         private void CheckoutCartOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart = null;
+            List<Tuple<string, int>> couponCodes = new List<Tuple<string, int>>();
+            foreach (var item in File.ReadAllLines(@"CouponCodes.csv").Select(a => a.Split(",")))
+            {
+                Tuple<string, int> couponCode = new Tuple<string, int>(item[0], Int32.Parse(item[1]));
+                couponCodes.Add(couponCode);
+            }
+            string userCouponCode = couponTextBox.Text;
+            if (userCouponCode != "")
+            {
+                var findCouponCodeAndDiscount = couponCodes.FirstOrDefault(x => x.Item1 == userCouponCode);
+            
+                if (findCouponCodeAndDiscount != null)
+                {
+                    int discount = findCouponCodeAndDiscount.Item2;
+                    MessageBox.Show(Receipt(discount));
+                    itemsInCart.Clear();
+                }
+                else
+                {
+                    MessageBox.Show("The coupon code is invalid");
+                }
+            }
+            else
+            {
+                MessageBox.Show(Receipt());
+                itemsInCart.Clear();
+            }
+        }
+
+        //Shows the receipt with what you have bought and what the discount was
+        private string Receipt(int discount = 0)
+        {
+            decimal totalPrice = 0;
+            string receiptText = "Receipt \n \n \n";
+
+            foreach (var item in itemsInCart)
+            {
+                receiptText += "\n " + item.Name + "     " + item.Price;
+
+                totalPrice += item.Price;
+            }
+
+            if (discount != 0)
+            {
+                totalPrice = totalPrice * ((100 - discount) / (decimal)100);
+            }
+            receiptText += "\n \n Total amout: " + totalPrice;
+            return receiptText;
         }
 
         //Displays all the products from Products.csv
