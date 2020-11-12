@@ -23,12 +23,16 @@ namespace OnlyFans
         public decimal Price;
         public string ImageName;
     }
+
     public partial class MainWindow : Window
     {
         //Global variables
         private List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
+        private ListBox itemsInCartListBox = new ListBox {};
+        private TextBlock cartPriceTextBlock;
         private TextBox couponTextBox;
-
+        private decimal totalPriceWithoutCoupon;
+        private decimal totalPrice;
 
         public MainWindow()
         {
@@ -71,11 +75,11 @@ namespace OnlyFans
             Grid.SetColumn(titleText, 0);
             Grid.SetRow(titleText, 0);
 
-            //store products
-            WrapPanel test = ProductList();
-            grid.Children.Add(test);
-            Grid.SetColumn(test, 0);
-            Grid.SetRow(test, 1);
+            //Store products
+            WrapPanel productPanel = ProductList();
+            grid.Children.Add(productPanel);
+            Grid.SetColumn(productPanel, 0);
+            Grid.SetRow(productPanel, 1);
 
             //Cart header Text
             TextBlock cartHeaderText = new TextBlock
@@ -90,10 +94,10 @@ namespace OnlyFans
             Grid.SetRow(cartHeaderText, 0);
 
             //Cart items
-            WrapPanel test2 = CartList();
-            grid.Children.Add(test2);
-            Grid.SetColumn(test2, 1);
-            Grid.SetRow(test2, 1);
+            WrapPanel cartPanel = CartList();
+            grid.Children.Add(cartPanel);
+            Grid.SetColumn(cartPanel, 1);
+            Grid.SetRow(cartPanel, 1);
         }
 
         // Panel for showing items in cart and more
@@ -108,22 +112,13 @@ namespace OnlyFans
             };
 
             // Yeet
-            foreach (var item in itemsInCart)
+            itemsInCartListBox = new ListBox
             {
-                TextBlock cartItemTextBlock = new TextBlock
-                {
-                    Text = item.Name + " " + item.Price + "kr",
-                    FontFamily = new FontFamily("Comic Sans MS")
-                };
-                var removeIteamfromCartButton = new Button
-                {
-                    Content = "Remove item",
-                    FontFamily = new FontFamily("Comic Sans MS"),
-                    Width = 70,
-                };
-                removeIteamfromCartButton.Click += ReamoveItemFromCartOnClick;
-                cartWrapPanel.Children.Add(removeIteamfromCartButton);
-            }
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(5),
+                Width = 200 
+            };
+            cartWrapPanel.Children.Add(itemsInCartListBox);
 
             // Enter a coupon
             TextBlock couponTextBlock = new TextBlock
@@ -141,6 +136,16 @@ namespace OnlyFans
                 Width = 80
             };
             cartWrapPanel.Children.Add(couponTextBox);
+
+            // Button for removing selected item in cart
+            var removeSelectedItemFromCartButton = new Button
+            {
+                Content = "Remove selected item from Cart",
+                FontFamily = new FontFamily("Comic Sans MS"),
+                Width = 200              
+            };
+            removeSelectedItemFromCartButton.Click += RemoveSelectedItemFromCartOnClick;
+            cartWrapPanel.Children.Add(removeSelectedItemFromCartButton);
 
             // Button for saving items in cart
             var saveCartButton = new Button
@@ -172,22 +177,34 @@ namespace OnlyFans
             checkoutCartButton.Click += CheckoutCartOnClick;
             cartWrapPanel.Children.Add(checkoutCartButton);
 
+            cartPriceTextBlock = new TextBlock
+            {
+                TextWrapping = TextWrapping.Wrap,
+                FontFamily = new FontFamily("Comic Sans MS")
+            };
+            cartWrapPanel.Children.Add(cartPriceTextBlock);
+
             return cartWrapPanel;
         }
 
-        private void ReamoveItemFromCartOnClick(object sender, RoutedEventArgs e)
+        private void RemoveSelectedItemFromCartOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart = null;
+            int itemIndex = itemsInCartListBox.SelectedIndex;
+            itemsInCart.RemoveAt(itemIndex);
+            itemsInCartListBox.Items.RemoveAt(itemIndex);
+            UpdateTotalPrices();
         }
 
         private void ClearCartOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart = null;
+            itemsInCart.Clear();
+            itemsInCartListBox.Items.Clear();
+            UpdateTotalPrices();
         }
 
         private void SaveCartToCSVOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart = null;
+            itemsInCart.Clear();
         }
         private void CheckoutCartOnClick(object sender, RoutedEventArgs e)
         {
@@ -251,7 +268,7 @@ namespace OnlyFans
 
                     };
                     wrappanel.Children.Add(buyButton);
-                    buyButton.Click += buyFan;
+                    buyButton.Click += AddFanToCart;
                 }
             }
             //If there are no products or it cant find the csv file it says "Sorry there are no products"
@@ -272,7 +289,7 @@ namespace OnlyFans
         }
 
         //Adds the item to the shoppingcart
-        private void buyFan(object sender, EventArgs e)
+        private void AddFanToCart(object sender, EventArgs e)
         {
             Button button = (Button)sender;
             Fan fan = new Fan
@@ -280,7 +297,23 @@ namespace OnlyFans
                 Name = button.Tag.ToString(),
                 Price = decimal.Parse(button.DataContext.ToString()),
             };
+            itemsInCartListBox.Items.Add($"{fan.Name}: {fan.Price}kr");
             itemsInCart.Add(fan);
+            UpdateTotalPrices();
+        }
+
+        private void UpdateTotalPrices()
+        {
+            if (itemsInCart.Count > 0)
+            {
+                totalPriceWithoutCoupon = itemsInCart.Sum(item => item.Price);
+                totalPrice = totalPriceWithoutCoupon;
+                cartPriceTextBlock.Text = totalPriceWithoutCoupon + "Kr without coupon " + totalPrice + "kr with your coupon";
+            }
+            else
+            {
+                cartPriceTextBlock.Text = "";
+            }
         }
     }
 }
