@@ -26,7 +26,7 @@ namespace OnlyFans
     public partial class MainWindow : Window
     {
         //Global variables
-        private List<string> itemsInCart = new List<string>(); //List for storing all the items in the cart
+        private List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
         private string discountCode = "";
 
         public MainWindow()
@@ -102,49 +102,80 @@ namespace OnlyFans
                 Margin = new Thickness(20)
             };
 
-            foreach (var item in File.ReadAllLines(@"products.csv").Select(a => a.Split(",")))
+            //loops through the products.csv file and displays all the items in it
+            try
             {
-                fan.Name = item[0];
-                fan.Description = item[1];
-                fan.Price = decimal.Parse(item[2]);
-                fan.ImageName = item[3];
-
-                TextBlock productName = new TextBlock
+                foreach (var item in File.ReadAllLines(@"products.csv").Select(a => a.Split(",")))
                 {
-                    Text = fan.Name,
-                    FontFamily = new FontFamily("Comic Sans MS")
-                };
-                wrappanel.Children.Add(productName);
+                    fan.Name = item[0];
+                    fan.Description = item[1];
+                    fan.Price = decimal.Parse(item[2]);
+                    fan.ImageName = item[3];
 
-                ImageSource imgSource = new BitmapImage(new Uri(@"Images\" + fan.ImageName + ".jpg", UriKind.Relative));
-                Image image = new Image
-                {
-                    Source = imgSource,
-                    Width = 100,
-                    Height = 100,
-                };
-                wrappanel.Children.Add(image);
+                    TextBlock productName = new TextBlock
+                    {
+                        Text = fan.Name,
+                        FontFamily = new FontFamily("Comic Sans MS")
+                    };
+                    wrappanel.Children.Add(productName);
 
-                TextBlock productDescription = new TextBlock
-                {
-                    Text = fan.Description,
-                    FontFamily = new FontFamily("Comic Sans MS"),
-                    Margin = new Thickness(5),
-                };
-                wrappanel.Children.Add(productDescription);
+                    ImageSource imgSource = new BitmapImage(new Uri(@"Images\" + fan.ImageName, UriKind.Relative));
+                    Image image = new Image
+                    {
+                        Source = imgSource,
+                        Width = 100,
+                        Height = 100,
+                    };
+                    wrappanel.Children.Add(image);
 
-                var buyButton = new Button
-                {
-                    Content = "Buy",
-                    Tag = fan.Name,
-                    DataContext = fan.Price,
-                    FontFamily = new FontFamily("Comic Sans MS"),
-                    Width = 40,
-                };
-                wrappanel.Children.Add(buyButton);
+                    TextBlock productDescription = new TextBlock
+                    {
+                        Text = fan.Description,
+                        FontFamily = new FontFamily("Comic Sans MS"),
+                        Margin = new Thickness(5),
+                    };
+                    wrappanel.Children.Add(productDescription);
+
+                    var buyButton = new Button
+                    {
+                        Content = "Buy",
+                        Tag = fan.Name,
+                        DataContext = fan.Price,
+                        FontFamily = new FontFamily("Comic Sans MS"),
+                        Width = 40,
+
+                    };
+                    wrappanel.Children.Add(buyButton);
+                    buyButton.Click += buyFan;
+                }
             }
+            //If there are no products or it cant find the csv file it says "Sorry there are no products"
+            catch (Exception)
+            {
+
+                TextBlock noProducts = new TextBlock
+                {
+                    Text = "Sorry there are no products",
+                    FontFamily = new FontFamily("Comic Sans MS"),
+                    FontSize = 15
+                };
+                wrappanel.Children.Add(noProducts);
+            }
+            
 
             return wrappanel;
+        }
+
+        //Adds the item to the shoppingcart
+        private void buyFan(object sender, EventArgs e)
+        {
+            Button button = (Button)sender;
+            Fan fan = new Fan
+            {
+                Name = button.Tag.ToString(),
+                Price = decimal.Parse(button.DataContext.ToString()),
+            };
+            itemsInCart.Add(fan);
         }
     }
 }
