@@ -27,7 +27,8 @@ namespace OnlyFans
     {
         //Global variables
         private List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
-        private string discountCode = "";
+        private TextBox couponTextBox;
+
 
         public MainWindow()
         {
@@ -87,6 +88,110 @@ namespace OnlyFans
             grid.Children.Add(cartHeaderText);
             Grid.SetColumn(cartHeaderText, 1);
             Grid.SetRow(cartHeaderText, 0);
+
+            //Cart items
+            WrapPanel test2 = CartList();
+            grid.Children.Add(test2);
+            Grid.SetColumn(test2, 1);
+            Grid.SetRow(test2, 1);
+        }
+
+        // Panel for showing items in cart and more
+        private WrapPanel CartList()
+        {
+            WrapPanel cartWrapPanel = new WrapPanel
+            {
+                HorizontalAlignment = HorizontalAlignment.Left,
+                VerticalAlignment = VerticalAlignment.Top,
+                Width = 200,
+                Margin = new Thickness(20)
+            };
+
+            // Yeet
+            foreach (var item in itemsInCart)
+            {
+                TextBlock cartItemTextBlock = new TextBlock
+                {
+                    Text = item.Name + " " + item.Price + "kr",
+                    FontFamily = new FontFamily("Comic Sans MS")
+                };
+                var removeIteamfromCartButton = new Button
+                {
+                    Content = "Remove item",
+                    FontFamily = new FontFamily("Comic Sans MS"),
+                    Width = 70,
+                };
+                removeIteamfromCartButton.Click += ReamoveItemFromCartOnClick;
+                cartWrapPanel.Children.Add(removeIteamfromCartButton);
+            }
+
+            // Enter a coupon
+            TextBlock couponTextBlock = new TextBlock
+            {
+                Text = "Enter coupon:",
+                FontFamily = new FontFamily("Comic Sans MS")
+            };
+            cartWrapPanel.Children.Add(couponTextBlock);
+
+            couponTextBox = new TextBox
+            {
+                VerticalContentAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(5),
+                MaxLength = 10,
+                Width = 80
+            };
+            cartWrapPanel.Children.Add(couponTextBox);
+
+            // Button for saving items in cart
+            var saveCartButton = new Button
+            {
+                Content = "Save Cart",
+                FontFamily = new FontFamily("Comic Sans MS"),
+                Width = 70,
+            };
+            saveCartButton.Click += SaveCartToCSVOnClick;
+            cartWrapPanel.Children.Add(saveCartButton);
+
+            // Button for removing all items in cart
+            var clearCartButton = new Button
+            {
+                Content = "Clear Cart",
+                FontFamily = new FontFamily("Comic Sans MS"),
+                Width = 70,
+            };
+            clearCartButton.Click += ClearCartOnClick;
+            cartWrapPanel.Children.Add(clearCartButton);
+
+            // Button for saving items in cart
+            var checkoutCartButton = new Button
+            {
+                Content = "Checkout",
+                FontFamily = new FontFamily("Comic Sans MS"),
+                Width = 140,
+            };
+            checkoutCartButton.Click += CheckoutCartOnClick;
+            cartWrapPanel.Children.Add(checkoutCartButton);
+
+            return cartWrapPanel;
+        }
+
+        private void ReamoveItemFromCartOnClick(object sender, RoutedEventArgs e)
+        {
+            itemsInCart = null;
+        }
+
+        private void ClearCartOnClick(object sender, RoutedEventArgs e)
+        {
+            itemsInCart = null;
+        }
+
+        private void SaveCartToCSVOnClick(object sender, RoutedEventArgs e)
+        {
+            itemsInCart = null;
+        }
+        private void CheckoutCartOnClick(object sender, RoutedEventArgs e)
+        {
+            itemsInCart = null;
         }
 
         //Displays all the products from Products.csv
