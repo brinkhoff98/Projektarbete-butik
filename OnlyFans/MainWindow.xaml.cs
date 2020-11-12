@@ -234,6 +234,7 @@ namespace OnlyFans
             else
             {
                 MessageBox.Show(Receipt());
+                itemsInCartListBox.Items.Clear();
                 itemsInCart.Clear();
             }
         }
@@ -255,7 +256,7 @@ namespace OnlyFans
             {
                 totalPrice = totalPrice * ((100 - discount) / (decimal)100);
             }
-            receiptText += "\n \n Total amout: " + totalPrice;
+            receiptText += "\n \n Total amout: " + totalPrice + "kr";
             return receiptText;
         }
 
