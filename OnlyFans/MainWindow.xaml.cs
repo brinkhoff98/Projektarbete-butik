@@ -224,11 +224,15 @@ namespace OnlyFans
                 {
                     int discount = findCouponCodeAndDiscount.Item2;
                     MessageBox.Show(Receipt(discount));
+                    itemsInCartListBox.Items.Clear();
                     itemsInCart.Clear();
+                    cartPriceTextBlock.Text = "";
+                    couponTextBox.Text = "";
                 }
                 else
                 {
                     MessageBox.Show("The coupon code is invalid");
+                    couponTextBox.Text = "";
                 }
             }
             else
@@ -236,6 +240,7 @@ namespace OnlyFans
                 MessageBox.Show(Receipt());
                 itemsInCartListBox.Items.Clear();
                 itemsInCart.Clear();
+                cartPriceTextBlock.Text = "";
             }
         }
 
@@ -243,11 +248,12 @@ namespace OnlyFans
         private string Receipt(int discount = 0)
         {
             decimal totalPrice = 0;
+            string discountText = "";
             string receiptText = "Receipt \n \n \n";
 
             foreach (var item in itemsInCart)
             {
-                receiptText += "\n " + item.Name + "     " + item.Price;
+                receiptText += "\n " + item.Name + "     " + item.Price + " kr";
 
                 totalPrice += item.Price;
             }
@@ -255,8 +261,10 @@ namespace OnlyFans
             if (discount != 0)
             {
                 totalPrice = totalPrice * ((100 - discount) / (decimal)100);
+                discountText = "\n Discount: " + discount + " %";
             }
-            receiptText += "\n \n Total amout: " + totalPrice + "kr";
+            receiptText += "\n \n Total amout: " + totalPrice + " kr";
+            receiptText += discountText;
             return receiptText;
         }
 
