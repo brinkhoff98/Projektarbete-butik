@@ -27,13 +27,15 @@ namespace OnlyFans
     public partial class MainWindow : Window
     {
         //Global variables
-        private List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
+        public static List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
         private ListBox itemsInCartListBox = new ListBox {};
         private TextBlock cartPriceTextBlock;
         private TextBox couponTextBox;
         private decimal totalPriceWithoutCoupon;
         private decimal totalPrice;
         private string tempPath = @"C:\Windows\Temp\SavedCart.csv";
+        public static decimal totalPriceWithoutCoupon;
+
 
         public MainWindow()
         {
@@ -219,19 +221,32 @@ namespace OnlyFans
         private void RemoveSelectedItemFromCartOnClick(object sender, RoutedEventArgs e)
         {
             int itemIndex = itemsInCartListBox.SelectedIndex;
-            itemsInCart.RemoveAt(itemIndex);
+            ClearCart(itemIndex);
             itemsInCartListBox.Items.RemoveAt(itemIndex);
             UpdateTotalPrices();
         }
 
         private void ClearCartOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart.Clear();
+            ClearCart();
             itemsInCartListBox.Items.Clear();
             UpdateTotalPrices();
             RemoveLoadedShippingCart();
         }
 
+        //Method for clearing cart
+        public static void ClearCart(int itemIndex = -1)
+        {
+            if (itemIndex == -1)
+            {
+                itemsInCart.Clear();
+            }
+            else
+            {
+                itemsInCart.RemoveAt(itemIndex);
+            }
+        }
+        
         // creates a .csv file or overwrite the file with the items from the shopping cart if its not empty
         private void SaveCartToCSVOnClick(object sender, RoutedEventArgs e)
         {
@@ -411,13 +426,13 @@ namespace OnlyFans
             UpdateTotalPrices();
         }
 
+        //Method for getting total price of all items in cart
         private void UpdateTotalPrices()
         {
             if (itemsInCart.Count > 0)
             {
                 totalPriceWithoutCoupon = itemsInCart.Sum(item => item.Price);
-                totalPrice = totalPriceWithoutCoupon;
-                cartPriceTextBlock.Text = totalPriceWithoutCoupon + "Kr without coupon " + totalPrice + "kr with your coupon";
+                cartPriceTextBlock.Text = totalPriceWithoutCoupon + "Kr without coupon";
             }
             else
             {
