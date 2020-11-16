@@ -31,11 +31,8 @@ namespace OnlyFans
         private ListBox itemsInCartListBox = new ListBox {};
         private TextBlock cartPriceTextBlock;
         private TextBox couponTextBox;
-        private decimal totalPriceWithoutCoupon;
-        private decimal totalPrice;
-        private string tempPath = @"C:\Windows\Temp\SavedCart.csv";
         public static decimal totalPriceWithoutCoupon;
-
+        private string tempPath = @"C:\Windows\Temp\SavedCart.csv";
 
         public MainWindow()
         {
