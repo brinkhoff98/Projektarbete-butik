@@ -33,6 +33,7 @@ namespace OnlyFans
         private TextBox couponTextBox;
         private decimal totalPriceWithoutCoupon;
         private decimal totalPrice;
+        private string tempPath = @"C:\Windows\Temp\SavedCart.csv";
 
         public MainWindow()
         {
@@ -98,6 +99,34 @@ namespace OnlyFans
             grid.Children.Add(cartPanel);
             Grid.SetColumn(cartPanel, 1);
             Grid.SetRow(cartPanel, 1);
+
+            LoadShoppingCart();
+        }
+
+        // Loads the shopping cart if its saved
+        private void LoadShoppingCart()
+        {
+            
+            if (File.Exists(tempPath))
+            {
+                foreach (var item in File.ReadAllLines(tempPath).Select(a => a.Split(",")))
+                {
+                    Fan fan = new Fan 
+                    {
+                        Name = item[0],
+                        Price = decimal.Parse(item[1])
+                    };
+                    
+                    itemsInCartListBox.Items.Add($"{fan.Name}: {fan.Price}kr");
+                    itemsInCart.Add(fan);
+                }
+                UpdateTotalPrices();
+            }
+        }
+
+        private void RemoveLoadedShippingCart()
+        {
+            File.Delete(tempPath);
         }
 
         // Panel for showing items in cart and more
@@ -200,13 +229,34 @@ namespace OnlyFans
             itemsInCart.Clear();
             itemsInCartListBox.Items.Clear();
             UpdateTotalPrices();
+            RemoveLoadedShippingCart();
         }
 
+        // creates a .csv file or overwrite the file with the items from the shopping cart if its not empty
         private void SaveCartToCSVOnClick(object sender, RoutedEventArgs e)
         {
-            itemsInCart.Clear();
+            StringBuilder csv = new StringBuilder();
+            string newLine = "";
+
+            if (itemsInCart.Count > 0)
+            {
+                foreach (var item in itemsInCart)
+                {
+                    newLine = item.Name + "," + item.Price + Environment.NewLine;
+                    csv.Append(newLine);
+                }
+                File.WriteAllText(tempPath, csv.ToString());
+                MessageBox.Show("Shopping cart is saved!");
+            }
+            else
+            {
+                MessageBox.Show("Shopping cart is empty!");
+            }
+                
+            
         }
-        //Check if the coupon code is valid and if so run the the Receipt method
+
+        // Check if the coupon code is valid and if so run the the Receipt method
         private void CheckoutCartOnClick(object sender, RoutedEventArgs e)
         {
             List<Tuple<string, int>> couponCodes = new List<Tuple<string, int>>();
@@ -228,6 +278,7 @@ namespace OnlyFans
                     itemsInCart.Clear();
                     cartPriceTextBlock.Text = "";
                     couponTextBox.Text = "";
+                    RemoveLoadedShippingCart();
                 }
                 else
                 {
@@ -241,10 +292,11 @@ namespace OnlyFans
                 itemsInCartListBox.Items.Clear();
                 itemsInCart.Clear();
                 cartPriceTextBlock.Text = "";
+                RemoveLoadedShippingCart();
             }
         }
 
-        //Shows the receipt with what you have bought and what the discount was
+        // Shows the receipt with what you have bought and what the discount was
         private string Receipt(int discount = 0)
         {
             decimal totalPrice = 0;
@@ -268,7 +320,7 @@ namespace OnlyFans
             return receiptText;
         }
 
-        //Displays all the products from Products.csv
+        // Displays all the products from Products.csv
         private WrapPanel ProductList()
         {
             Fan fan = new Fan();
@@ -281,7 +333,7 @@ namespace OnlyFans
                 Margin = new Thickness(20)
             };
 
-            //loops through the products.csv file and displays all the items in it
+            // loops through the products.csv file and displays all the items in it
             try
             {
                 foreach (var item in File.ReadAllLines(@"products.csv").Select(a => a.Split(",")))
@@ -328,7 +380,7 @@ namespace OnlyFans
                     buyButton.Click += AddFanToCart;
                 }
             }
-            //If there are no products or it cant find the csv file it says "Sorry there are no products"
+            // If there are no products or it cant find the csv file it says "Sorry there are no products"
             catch (Exception)
             {
 
@@ -345,7 +397,7 @@ namespace OnlyFans
             return wrappanel;
         }
 
-        //Adds the item to the shoppingcart
+        // Adds the item to the shoppingcart
         private void AddFanToCart(object sender, EventArgs e)
         {
             Button button = (Button)sender;
