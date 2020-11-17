@@ -3,16 +3,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace OnlyFans
 {
@@ -27,7 +21,7 @@ namespace OnlyFans
     public partial class MainWindow : Window
     {
         //Global variables
-        public static List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart
+        public static List<Fan> itemsInCart = new List<Fan>(); //List for storing all the items in the cart-
         private ListBox itemsInCartListBox = new ListBox {};
         private TextBlock cartPriceTextBlock;
         private TextBox couponTextBox;
@@ -139,7 +133,6 @@ namespace OnlyFans
                 Margin = new Thickness(20)
             };
 
-            // Yeet
             itemsInCartListBox = new ListBox
             {
                 VerticalContentAlignment = VerticalAlignment.Center,
@@ -271,41 +264,49 @@ namespace OnlyFans
         // Check if the coupon code is valid and if so run the the Receipt method
         private void CheckoutCartOnClick(object sender, RoutedEventArgs e)
         {
-            List<Tuple<string, int>> couponCodes = new List<Tuple<string, int>>();
-            foreach (var item in File.ReadAllLines(@"CouponCodes.csv").Select(a => a.Split(",")))
+            if (itemsInCart.Count > 0)
             {
-                Tuple<string, int> couponCode = new Tuple<string, int>(item[0], Int32.Parse(item[1]));
-                couponCodes.Add(couponCode);
-            }
-            string userCouponCode = couponTextBox.Text;
-            if (userCouponCode != "")
-            {
-                var findCouponCodeAndDiscount = couponCodes.FirstOrDefault(x => x.Item1 == userCouponCode);
-            
-                if (findCouponCodeAndDiscount != null)
+                List<Tuple<string, int>> couponCodes = new List<Tuple<string, int>>();
+                foreach (var item in File.ReadAllLines(@"CouponCodes.csv").Select(a => a.Split(",")))
                 {
-                    int discount = findCouponCodeAndDiscount.Item2;
-                    MessageBox.Show(Receipt(discount));
-                    itemsInCartListBox.Items.Clear();
-                    itemsInCart.Clear();
-                    cartPriceTextBlock.Text = "";
-                    couponTextBox.Text = "";
-                    RemoveLoadedShippingCart();
+                    Tuple<string, int> couponCode = new Tuple<string, int>(item[0], Int32.Parse(item[1]));
+                    couponCodes.Add(couponCode);
+                }
+                string userCouponCode = couponTextBox.Text;
+                if (userCouponCode != "")
+                {
+                    var findCouponCodeAndDiscount = couponCodes.FirstOrDefault(x => x.Item1 == userCouponCode);
+
+                    if (findCouponCodeAndDiscount != null)
+                    {
+                        int discount = findCouponCodeAndDiscount.Item2;
+                        MessageBox.Show(Receipt(discount));
+                        itemsInCartListBox.Items.Clear();
+                        ClearCart();
+                        cartPriceTextBlock.Text = "";
+                        couponTextBox.Text = "";
+                        RemoveLoadedShippingCart();
+                    }
+                    else
+                    {
+                        MessageBox.Show("The coupon code is invalid");
+                        couponTextBox.Text = "";
+                    }
                 }
                 else
                 {
-                    MessageBox.Show("The coupon code is invalid");
-                    couponTextBox.Text = "";
+                    MessageBox.Show(Receipt());
+                    itemsInCartListBox.Items.Clear();
+                    ClearCart();
+                    cartPriceTextBlock.Text = "";
+                    RemoveLoadedShippingCart();
                 }
             }
             else
             {
-                MessageBox.Show(Receipt());
-                itemsInCartListBox.Items.Clear();
-                itemsInCart.Clear();
-                cartPriceTextBlock.Text = "";
-                RemoveLoadedShippingCart();
+                MessageBox.Show("Please add some products before checking out the shopping cart!");
             }
+
         }
 
         // Shows the receipt with what you have bought and what the discount was
